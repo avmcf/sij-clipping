@@ -57,8 +57,8 @@ public class Clipping extends JPanel implements ActionListener {
 	static List <String> indexados = new ArrayList<String>();
 	static List <String> folderIds = new ArrayList<String>();
 	
-	static String[] listaEdicoes = new String[50];
-	static String[] listData = new String[7];
+	static String[] listaEdicoes = new String[55];
+	static String[] listData = new String[55];
 	
 	public static String usuario = "sgj";
     public static String password = "934769386";
