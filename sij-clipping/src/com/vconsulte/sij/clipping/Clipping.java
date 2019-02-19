@@ -21,7 +21,10 @@ package com.vconsulte.sij.clipping;
 //					Integração CMIS
 //					Gravação dos editais diretamente no servidor Alfresco
 //
-//	V&C Consultoria Ltda.
+//	versao 2.1 		- 18 de Fevereiro de 2019
+//					Novo query para selecao de editais conforme o novo modelo de dados
+//	
+// 	V&C Consultoria Ltda.
 //	Autor: Arlindo Viana.
 //***************************************************************************************************
 
@@ -62,8 +65,8 @@ public class Clipping extends JPanel implements ActionListener {
 	
 	public static String usuario = "sgj";
     public static String password = "934769386";
-   public static String url = "http://192.168.1.30:8080";
-//	public static String url = "http://127.0.0.1:8080";
+//    public static String url = "http://192.168.1.30:8080";
+	public static String url = "http://127.0.0.1:8080";
 	public static String baseFolder = "/Sites/advocacia/documentLibrary/Secretaria/Publicacoes";
 	static String idDoc = null;
 
@@ -292,9 +295,11 @@ public class Clipping extends JPanel implements ActionListener {
 
 		while (indice < tokensTab.size()-1) {
 
-			queryString = "select cmis:objectId from sij:edital where contains('\\'" +
-					tokensTab.get(indice) + "\\'') AND in_folder('" + pastaId + "') AND sij:edtTribunal = '" + tribunal + "' AND sij:edtAtivo = false";			
+	//		queryString = "select cmis:objectId from sij:documento where contains('\\'" +
+	//				tokensTab.get(indice) + "\\'') AND in_folder('" + pastaId + "') AND sij:pubTribunal = '" + tribunal + "' AND sij:docAtivo = false";			
 
+			queryString = "SELECT d.cmis:objectId FROM sij:documento AS d JOIN sij:publicacao AS w ON d.cmis:objectId = w.cmis:objectId WHERE contains(d,'\\'" + tokensTab.get(indice) + "\\'') AND in_folder(d,'" + pastaId + "') AND w.sij:pubTribunal = '" + tribunal + "' AND d.sij:docAtivo = false";
+			
 			idDocs.clear();
 			idDocs = (conexao.localizaEditais(sessao, queryString));
 
