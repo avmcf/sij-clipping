@@ -24,6 +24,12 @@ package com.vconsulte.sij.clipping;
 //	versao 2.1 		- 18 de Fevereiro de 2019
 //					Novo query para selecao de editais conforme o novo modelo de dados
 //	
+//	versao 2.2 		- 24 de Fevereiro de 2019
+//					Correção no query de indexação
+//
+//	versao 3 		- 04 de Março de 2020
+//					Versão compativel com o Splitter_3.0
+//
 // 	V&C Consultoria Ltda.
 //	Autor: Arlindo Viana.
 //***************************************************************************************************
@@ -45,9 +51,7 @@ package com.vconsulte.sij.clipping;
 
 public class Clipping extends JPanel implements ActionListener {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	static InterfaceServidor conexao = new InterfaceServidor();
@@ -67,10 +71,10 @@ public class Clipping extends JPanel implements ActionListener {
     public static String password = "934769386";
 //    public static String url = "http://192.168.1.30:8080";
 	public static String url = "http://127.0.0.1:8080";
-	public static String baseFolder = "/Sites/advocacia/documentLibrary/Secretaria/Publicacoes";
+	public static String baseFolder = "/Sites/advocacia/documentLibrary/Secretaria/publicacoes";
 	static String idDoc = null;
 
-	static String queryString = "";
+//	static String queryString = "";
 	static String edicaoEscolhida = "";	
 	static String token = "";
     static String a = null;
@@ -81,7 +85,7 @@ public class Clipping extends JPanel implements ActionListener {
 	
 	static boolean escolheu = false;
 
-	static JFrame frame = new JFrame("Indexação de Editais");
+	static JFrame frame = new JFrame("Indexação de Publicações");
 	static JPanel controlPane = new JPanel();
 
 	private JButton btn1;
@@ -260,7 +264,8 @@ public class Clipping extends JPanel implements ActionListener {
 	}
     
     public static void indexar() throws Exception {
-
+    	
+    	String selecionados = null;
     	int indice = 0;
     	List <String> folderOrigem = new ArrayList<String>();
     	
@@ -274,11 +279,18 @@ public class Clipping extends JPanel implements ActionListener {
 		String descricao = folderOrigem.get(2);
 		String pastaNome = folderOrigem.get(3);
 		String tribunal = descricao.substring(4, 6);
-		String strEdicao = descricao.substring(23, 27) + "-";
+	/*	
+		String strEdicao = descricao.substring(25, 27) + "-";
+		strEdicao = strEdicao + descricao.substring(22, 24) + "-";
+		strEdicao = strEdicao + descricao.substring(17, 21);	
 		
-		strEdicao = strEdicao + descricao.substring(20, 22) + "-";
-		strEdicao = strEdicao + descricao.substring(17, 19);	
-		
+		String strEdicao = descricao.substring(25, 27) + "-";
+		strEdicao = strEdicao + descricao.substring(22, 24) + "-";
+		strEdicao = strEdicao + descricao.substring(17, 21);
+
+	*/	
+		String strEdicao = descricao.substring(17, 27);
+				
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
         
@@ -293,27 +305,24 @@ public class Clipping extends JPanel implements ActionListener {
        
         indexados.clear();
 
-		while (indice < tokensTab.size()-1) {
-
-	//		queryString = "select cmis:objectId from sij:documento where contains('\\'" +
-	//				tokensTab.get(indice) + "\\'') AND in_folder('" + pastaId + "') AND sij:pubTribunal = '" + tribunal + "' AND sij:docAtivo = false";			
-
-			queryString = "SELECT d.cmis:objectId FROM sij:documento AS d JOIN sij:publicacao AS w ON d.cmis:objectId = w.cmis:objectId WHERE contains(d,'\\'" + tokensTab.get(indice) + "\\'') AND in_folder(d,'" + pastaId + "') AND w.sij:pubTribunal = '" + tribunal + "' AND d.sij:docAtivo = false";
-			
+		while (indice < tokensTab.size()-1) {			
+			selecionados = "SELECT d.cmis:objectId FROM sij:documento AS d JOIN sij:publicacao AS w ON d.cmis:objectId = w.cmis:objectId WHERE contains(d,'\\'" + tokensTab.get(indice) + "\\'') AND in_folder(d,'" + pastaId + "') AND w.sij:pubTribunal = '" + tribunal + "'";			
 			idDocs.clear();
-			idDocs = (conexao.localizaEditais(sessao, queryString));
-
+			idDocs = (conexao.localizaEditais(sessao, selecionados));
 			if(idDocs.size() >0) {
 				novaMensagem(obtemHrAtual() + "Localizado Token: " + tokensTab.get(indice));
-				for (int i = 0; i <= idDocs.size()-1; i++) {			
+				for (int i = 0; i <= idDocs.size()-1; i++) {
 					InterfaceServidor.indexaEdital(sessao, idDocs.get(i), tokensTab.get(indice));
 					if(!indexados.contains(idDocs.get(i))) {
 						indexados.add(idDocs.get(i));
 					}	
 				}
 			}		
-			indice++;  
+			indice++;
+			k++;
 		}
+		
+		// -------------------------------------------------------------------------------------------
 		
 		novaMensagem(obtemHrAtual() + "Início da movimentação das publicações");
 		
